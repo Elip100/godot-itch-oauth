@@ -36,15 +36,16 @@ func logout_current_user():
 
 func update_user_data(user: ItchUser):
 	var request := HTTPRequest.new()
-	request.request_completed.connect(_handle_response.bind(user))
+	request.request_completed.connect(_handle_response.bind(user, request))
 	add_child(request)
 	request.request("https://itch.io/api/1/%s/me" % user.access_token)
 
-func _handle_response(result, response_code, headers, body, user: ItchUser):
+func _handle_response(result, response_code, headers, body, user: ItchUser, request: HTTPRequest):
 	var _success = user._handle_response(result, response_code, headers, body)
 	if _success != OK:
 		_failed = true
 	_emit_signals(user)
+	request.queue_free()
 
 func _show_popup() -> void:
 	popup.get_node("AnimationPlayer").play("popup")
